@@ -9,6 +9,10 @@ import (
 // ECCGenerator generates an ECC key pair.
 type ECCGenerator struct{}
 
+func NewECCGenerator() *ECCGenerator {
+	return &ECCGenerator{}
+}
+
 // Generate generates a new ECCKeyPair.
 func (g *ECCGenerator) Generate() (*KeyPair, error) {
 	// Security has been ignored for the sake of simplicity.

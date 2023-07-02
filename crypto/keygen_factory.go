@@ -8,12 +8,17 @@ type KeyGenerator interface {
 	Generate() (*KeyPair, error)
 }
 
+type Marshaler interface {
+	Marshal(keyPair interface{}) ([]byte, []byte, error)
+	Unmarshal(privateKeyBytes []byte) (interface{}, error)
+}
+
 func KeyGeneratorFactory(algorithm string) (KeyGenerator, error) {
 	switch algorithm {
 	case "RSA":
-		return &RSAGenerator{}, nil
+		return NewRSAGenerator(), nil
 	case "ECC":
-		return &ECCGenerator{}, nil
+		return NewECCGenerator(), nil
 	default:
 		return nil, fmt.Errorf("invalid algorithm")
 	}

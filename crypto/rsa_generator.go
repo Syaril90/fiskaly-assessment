@@ -8,6 +8,10 @@ import (
 // RSAGenerator generates a RSA key pair.
 type RSAGenerator struct{}
 
+func NewRSAGenerator() *RSAGenerator {
+	return &RSAGenerator{}
+}
+
 // Generate generates a new RSAKeyPair.
 func (g *RSAGenerator) Generate() (*KeyPair, error) {
 	// Security has been ignored for the sake of simplicity.
