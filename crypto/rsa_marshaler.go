@@ -6,48 +6,48 @@ import (
 	"encoding/pem"
 )
 
-// RSAKeyPair is a DTO that holds RSA private and public keys.
-type RSAKeyPair struct {
-	Public  *rsa.PublicKey
-	Private *rsa.PrivateKey
-}
-
-// RSAMarshaler can encode and decode an RSA key pair.
 type RSAMarshaler struct{}
 
-// NewRSAMarshaler creates a new RSAMarshaler.
-func NewRSAMarshaler() RSAMarshaler {
-	return RSAMarshaler{}
+func NewRSAMarshaler() Marshaler {
+	return &RSAMarshaler{}
 }
 
-// Marshal takes an RSAKeyPair and encodes it to be written on disk.
-// It returns the public and the private key as a byte slice.
-func (m *RSAMarshaler) Marshal(keyPair RSAKeyPair) ([]byte, []byte, error) {
-	privateKeyBytes := x509.MarshalPKCS1PrivateKey(keyPair.Private)
-	publicKeyBytes := x509.MarshalPKCS1PublicKey(keyPair.Public)
+func (m *RSAMarshaler) Encode(keyPair KeyPair) ([]byte, []byte, error) {
+
+	rsaPublic, ok := keyPair.Public.(*rsa.PublicKey)
+	if !ok {
+		return nil, nil, ErrInvalidRsaPrivateKey
+	}
+
+	rsaPrivate, ok := keyPair.Private.(*rsa.PrivateKey)
+	if !ok {
+		return nil, nil, ErrInvalidRsaPrivateKey
+	}
+
+	privateKeyBytes := x509.MarshalPKCS1PrivateKey(rsaPrivate)
+	publicKeyBytes := x509.MarshalPKCS1PublicKey(rsaPublic)
 
 	encodedPrivate := pem.EncodeToMemory(&pem.Block{
 		Type:  "RSA_PRIVATE_KEY",
 		Bytes: privateKeyBytes,
 	})
 
-	encodePublic := pem.EncodeToMemory(&pem.Block{
+	encodedPublic := pem.EncodeToMemory(&pem.Block{
 		Type:  "RSA_PUBLIC_KEY",
 		Bytes: publicKeyBytes,
 	})
 
-	return encodePublic, encodedPrivate, nil
+	return encodedPublic, encodedPrivate, nil
 }
 
-// Unmarshal takes an encoded RSA private key and transforms it into a rsa.PrivateKey.
-func (m *RSAMarshaler) Unmarshal(privateKeyBytes []byte) (*RSAKeyPair, error) {
+func (m *RSAMarshaler) Decode(privateKeyBytes []byte) (KeyPair, error) {
 	block, _ := pem.Decode(privateKeyBytes)
 	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, err
+		return KeyPair{}, err
 	}
 
-	return &RSAKeyPair{
+	return KeyPair{
 		Private: privateKey,
 		Public:  &privateKey.PublicKey,
 	}, nil

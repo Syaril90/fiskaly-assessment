@@ -11,9 +11,9 @@ type Device struct {
 	ID               uuid.UUID         `json:"id"`
 	Label            string            `json:"label"`
 	SignatureCounter int               `json:"signature_counter"`
-	LastSignature    string            `json:"-"`
-	PrivateKey       crypto.PrivateKey `json:"-"`
-	PublicKey        crypto.PublicKey  `json:"-"`
+	LastSignature    string            `json:"last_signature"`
+	PrivateKey       crypto.PrivateKey `json:"privateKey"`
+	PublicKey        crypto.PublicKey  `json:"publicKey"`
 	Algorithm        string            `json:"algorithm"`
 }
 

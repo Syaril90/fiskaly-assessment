@@ -53,7 +53,7 @@ func (s *Server) CreateDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	keyPairGenerator, err := crypto.KeyGeneratorFactory(req.Algorithm)
+	keyPairGenerator, KeyPairMarshaler, err := crypto.KeyPairCryptoFactory(req.Algorithm)
 	if err != nil {
 		s.logError(err)
 		WriteErrorResponse(w, http.StatusBadRequest, []string{"Invalid algorithm"})
@@ -67,12 +67,19 @@ func (s *Server) CreateDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	encodePublicKey, encodePrivateKey, err := KeyPairMarshaler.Encode(*keyPair)
+	if err != nil {
+		s.logError(err)
+		WriteInternalError(w)
+		return
+	}
+
 	device := domain.Device{
 		ID:               id,
 		Label:            req.Label,
 		SignatureCounter: 0,
-		PrivateKey:       keyPair.Private,
-		PublicKey:        keyPair.Public,
+		PrivateKey:       encodePrivateKey,
+		PublicKey:        encodePublicKey,
 		Algorithm:        req.Algorithm,
 	}
 

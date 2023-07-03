@@ -5,14 +5,12 @@ import (
 	"crypto/rsa"
 )
 
-// RSAGenerator generates a RSA key pair.
 type RSAGenerator struct{}
 
 func NewRSAGenerator() *RSAGenerator {
 	return &RSAGenerator{}
 }
 
-// Generate generates a new RSAKeyPair.
 func (g *RSAGenerator) Generate() (*KeyPair, error) {
 	// Security has been ignored for the sake of simplicity.
 	key, err := rsa.GenerateKey(rand.Reader, 512)
@@ -21,7 +19,7 @@ func (g *RSAGenerator) Generate() (*KeyPair, error) {
 	}
 
 	return &KeyPair{
-		Public:  key.PublicKey,
+		Public:  key.Public(),
 		Private: key,
 	}, nil
 }
