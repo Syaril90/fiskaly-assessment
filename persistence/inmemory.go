@@ -3,11 +3,17 @@ package persistence
 import (
 	"fmt"
 	"log"
+	"sync"
 
 	"github.com/google/uuid"
 
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/domain"
 )
+
+type Repository struct {
+	Devices      sync.Map
+	Transactions sync.Map
+}
 
 func NewRepository() *Repository {
 	return &Repository{}
@@ -56,6 +62,25 @@ func (r *Repository) SaveTransaction(t domain.Transaction) error {
 	if _, loaded := r.Transactions.LoadOrStore(key, t); loaded {
 		log.Printf("Transaction with Key: %v already exists, overwriting with new data", key)
 	}
+
+	return nil
+}
+
+func (r *Repository) UpdateLastSignatureAndCounter(deviceID uuid.UUID, lastSignature string) error {
+	value, ok := r.Devices.Load(deviceID.String())
+	if !ok {
+		return fmt.Errorf("device with ID: %v not found", deviceID.String())
+	}
+
+	device, ok := value.(domain.Device)
+	if !ok {
+		return fmt.Errorf("failed to assert value to Device type")
+	}
+
+	device.LastSignature = lastSignature
+	device.SignatureCounter++
+
+	r.Devices.Store(deviceID.String(), device)
 
 	return nil
 }

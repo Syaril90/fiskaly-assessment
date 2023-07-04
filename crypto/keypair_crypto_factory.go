@@ -9,13 +9,24 @@ type Marshaler interface {
 	Decode(privateKeyBytes []byte) (KeyPair, error)
 }
 
-func KeyPairCryptoFactory(algorithm string) (KeyGenerator, Marshaler, error) {
+type KeyPairCrypto struct {
+	KeyGenerator KeyGenerator
+	Marshaler    Marshaler
+}
+
+func NewKeyPairCrypto(algorithm string) (*KeyPairCrypto, error) {
 	switch algorithm {
 	case "RSA":
-		return NewRSAGenerator(), NewRSAMarshaler(), nil
+		return &KeyPairCrypto{
+			KeyGenerator: NewRSAGenerator(),
+			Marshaler:    NewRSAMarshaler(),
+		}, nil
 	case "ECC":
-		return NewECCGenerator(), NewECCMarshaler(), nil
+		return &KeyPairCrypto{
+			KeyGenerator: NewECCGenerator(),
+			Marshaler:    NewECCMarshaler(),
+		}, nil
 	default:
-		return nil, nil, InvalidAlgorithType
+		return nil, ErrInvalidAlgorithType
 	}
 }

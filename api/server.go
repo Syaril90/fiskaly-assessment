@@ -22,6 +22,8 @@ type IRepository interface {
 	SaveDevice(device domain.Device) error
 	GetDevice(id uuid.UUID) (domain.Device, error)
 	GetAllDevices() ([]domain.Device, error)
+	SaveTransaction(domain.Transaction) error
+	UpdateLastSignatureAndCounter(deviceID uuid.UUID, lastSignature string) error
 }
 
 // Server manages HTTP requests and dispatches them to the appropriate services.
@@ -44,6 +46,7 @@ func (s *Server) Run() error {
 
 	mux.Handle("/api/v0/health", http.HandlerFunc(s.Health))
 	mux.Handle("/api/v0/devices", http.HandlerFunc(s.Devices))
+	mux.Handle("/api/v0/sign", http.HandlerFunc(s.Sign))
 
 	// TODO: register further HandlerFuncs here ...
 
