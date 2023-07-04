@@ -6,6 +6,7 @@ import (
 
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/domain"
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 // Response is the generic API response container.
@@ -24,6 +25,7 @@ type IRepository interface {
 	GetAllDevices() ([]domain.Device, error)
 	SaveTransaction(domain.Transaction) error
 	UpdateLastSignatureAndCounter(deviceID uuid.UUID, lastSignature string) error
+	GetTransactions(id uuid.UUID) ([]domain.Transaction, error)
 }
 
 // Server manages HTTP requests and dispatches them to the appropriate services.
@@ -42,15 +44,22 @@ func NewServer(listenAddress string, repository IRepository) *Server {
 
 // Run registers all HandlerFuncs for the existing HTTP routes and starts the Server.
 func (s *Server) Run() error {
-	mux := http.NewServeMux()
+	r := mux.NewRouter()
 
-	mux.Handle("/api/v0/health", http.HandlerFunc(s.Health))
-	mux.Handle("/api/v0/devices", http.HandlerFunc(s.Devices))
-	mux.Handle("/api/v0/sign", http.HandlerFunc(s.Sign))
+	// r.Handle("/api/v0/health", http.HandlerFunc(s.Health))
+	// r.Handle("/api/v0/devices", http.HandlerFunc(s.Devices))
+	// r.Handle("/api/v0/sign", http.HandlerFunc(s.Sign))
+	// r.Handle("/api/v0/transactions/{deviceID}", http.HandlerFunc(s.Transactions))
+
+	r.HandleFunc("/api/v0/health", s.Health).Methods("GET")
+	r.HandleFunc("/api/v0/devices", s.GetAllDevices).Methods("GET")
+	r.HandleFunc("/api/v0/devices", s.CreateDevice).Methods("POST")
+	r.HandleFunc("/api/v0/devices/{deviceID}/sign", s.Sign).Methods("POST")
+	r.HandleFunc("/api/v0/devices/{deviceID}/transactions", s.Transactions).Methods("GET")
 
 	// TODO: register further HandlerFuncs here ...
 
-	return http.ListenAndServe(s.listenAddress, mux)
+	return http.ListenAndServe(s.listenAddress, r)
 }
 
 // WriteInternalError writes a default internal error message as an HTTP response.

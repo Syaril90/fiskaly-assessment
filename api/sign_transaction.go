@@ -9,11 +9,11 @@ import (
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/crypto"
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/domain"
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 type SignRequest struct {
-	Data     string    `json:"data"`
-	DeviceId uuid.UUID `json:"deviceId"`
+	Data string `json:"data"`
 }
 
 type SignResponse struct {
@@ -22,15 +22,28 @@ type SignResponse struct {
 }
 
 func (s *Server) Sign(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	deviceId, ok := vars["deviceID"]
+	if !ok {
+		WriteErrorResponse(w, http.StatusBadRequest, []string{"DeviceID parameter is required"})
+		return
+	}
+
+	id, err := uuid.Parse(deviceId)
+	if err != nil {
+		WriteErrorResponse(w, http.StatusBadRequest, []string{"Invalid DeviceID"})
+		return
+	}
+
 	var req SignRequest
-	err := json.NewDecoder(r.Body).Decode(&req)
+	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		s.logError(err)
 		WriteErrorResponse(w, http.StatusBadRequest, []string{"Invalid request body"})
 		return
 	}
 
-	device, err := s.repository.GetDevice(req.DeviceId)
+	device, err := s.repository.GetDevice(id)
 	if err != nil {
 		s.logError(err)
 		WriteErrorResponse(w, http.StatusBadRequest, []string{"Invalid request body"})

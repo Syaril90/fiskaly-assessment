@@ -10,6 +10,8 @@ import (
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/domain"
 )
 
+var mu sync.Mutex
+
 type Repository struct {
 	Devices      sync.Map
 	Transactions sync.Map
@@ -67,6 +69,9 @@ func (r *Repository) SaveTransaction(t domain.Transaction) error {
 }
 
 func (r *Repository) UpdateLastSignatureAndCounter(deviceID uuid.UUID, lastSignature string) error {
+	mu.Lock()
+	defer mu.Unlock()
+
 	value, ok := r.Devices.Load(deviceID.String())
 	if !ok {
 		return fmt.Errorf("device with ID: %v not found", deviceID.String())

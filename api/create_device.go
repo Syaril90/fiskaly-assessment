@@ -9,6 +9,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type CreateDeviceRequest struct {
+	Algorithm string `json:"algorithm"`
+	Label     string `json:"label"`
+}
+
 func (s *Server) CreateDevice(w http.ResponseWriter, r *http.Request) {
 	var req CreateDeviceRequest
 	err := json.NewDecoder(r.Body).Decode(&req)

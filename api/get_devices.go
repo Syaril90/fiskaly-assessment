@@ -1,6 +1,10 @@
 package api
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/fiskaly/coding-challenges/signing-service-challenge/domain"
+)
 
 func (s *Server) GetAllDevices(w http.ResponseWriter, r *http.Request) {
 	devices, err := s.repository.GetAllDevices()
@@ -20,4 +24,14 @@ func (s *Server) GetAllDevices(w http.ResponseWriter, r *http.Request) {
 	}
 
 	WriteAPIResponse(w, http.StatusOK, deviceResponses)
+}
+
+func RemapDeviceToResponse(device domain.Device) DeviceResponse {
+	return DeviceResponse{
+		ID:               device.ID,
+		Label:            device.Label,
+		SignatureCounter: device.SignatureCounter,
+		Algorithm:        device.Algorithm,
+		LastSignature:    device.LastSignature,
+	}
 }
