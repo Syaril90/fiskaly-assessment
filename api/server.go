@@ -46,11 +46,6 @@ func NewServer(listenAddress string, repository IRepository) *Server {
 func (s *Server) Run() error {
 	r := mux.NewRouter()
 
-	// r.Handle("/api/v0/health", http.HandlerFunc(s.Health))
-	// r.Handle("/api/v0/devices", http.HandlerFunc(s.Devices))
-	// r.Handle("/api/v0/sign", http.HandlerFunc(s.Sign))
-	// r.Handle("/api/v0/transactions/{deviceID}", http.HandlerFunc(s.Transactions))
-
 	r.HandleFunc("/api/v0/health", s.Health).Methods("GET")
 	r.HandleFunc("/api/v0/devices", s.GetAllDevices).Methods("GET")
 	r.HandleFunc("/api/v0/devices", s.CreateDevice).Methods("POST")
